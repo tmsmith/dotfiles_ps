@@ -1,0 +1,3 @@
+function version {
+	$PSVersionTable.PSVersion
+}
