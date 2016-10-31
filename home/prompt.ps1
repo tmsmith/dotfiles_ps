@@ -1,5 +1,5 @@
 function aws_prompt {
-  if ($env:AWS_DEFAULT_PROFILE -eq (cat $env:AWS_HOME"\default")) {
+  if (Is-AwsDefaultProfile) {
     $bgColor = $Host.UI.RawUI.BackgroundColor
     $fgColor = $Host.UI.RawUI.ForegroundColor
   } else {

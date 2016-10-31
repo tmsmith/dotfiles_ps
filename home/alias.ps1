@@ -23,3 +23,5 @@ Set-Alias gs _git_status
 
 Set-Alias ll Get-ChildItem
 Set-Alias open Invoke-Item
+
+Set-Alias rdp mstsc

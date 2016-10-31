@@ -8,9 +8,9 @@ $VCS_UNTRACKED_ICON = [char]::ConvertFromUtf32(0xE16C)
 $VCS_UNSTAGED_ICON = [char]::ConvertFromUtf32(0xE17C)
 $VCS_STAGED_ICON = [char]::ConvertFromUtf32(0xE168)
 $VCS_STASH_ICON = [char]::ConvertFromUtf32(0xE133)
-
 $AWS_ICON = [char]::ConvertFromUtf32(0xE895)
 
+$global:SHOW_AWS_PROFILE = Get-AwsShowProfileWhenDefault
 
 function Write-Theme
 {
@@ -21,24 +21,13 @@ function Write-Theme
         $with
     )
 
-    #$lastColor = script:aws_prompt
-    #Write-Prompt -Object (Get-ShortPath -dir $pwd) -ForegroundColor $sl.Colors.PromptForegroundColor -BackgroundColor $sl.Colors.PromptBackgroundColor
-    #Write-Prompt -Object ' ' -ForegroundColor $sl.Colors.PromptForegroundColor -BackgroundColor $sl.Colors.PromptBackgroundColor
-
-    if ($env:AWS_DEFAULT_PROFILE -eq (cat $env:AWS_HOME"\default")) {
-      $bgColor = $sl.Colors.SessionInfoBackgroundColor
-      $fgColor = $sl.Colors.SessionInfoForegroundColor
-    } else {
-      $bgColor = "DarkRed"
-      $fgColor = "White"
-    }
-
     $lastColor = $sl.Colors.PromptBackgroundColor
-
-    Write-Prompt -Object $AWS_ICON -Back $bgColor -Fore $fgColor
-    Write-Prompt " $env:AWS_DEFAULT_PROFILE " -Back $bgColor -Fore $fgColor
-    Write-Prompt -Object $sl.PromptSymbols.SegmentForwardSymbol -ForegroundColor $bgColor -BackgroundColor $lastColor
-    #Write-Prompt -Object " $($themeInfo.VcInfo) " -BackgroundColor $lastColor -ForegroundColor $sl.Colors.GitForegroundColor
+    $aws = Get-AwsPromptInfo
+    if ($aws) {
+      Write-Prompt -Object $AWS_ICON -Back $aws.BackgroundColor -Fore $aws.ForegroundColor
+      Write-Prompt " $env:AWS_DEFAULT_PROFILE" -Back $aws.BackgroundColor -Fore $aws.ForegroundColor
+      Write-Prompt -Object $sl.PromptSymbols.SegmentForwardSymbol -ForegroundColor $aws.BackgroundColor -BackgroundColor $lastColor
+    }
 
     Write-Prompt -Object (Get-FullPath -dir $pwd) -ForegroundColor $sl.Colors.PromptForegroundColor -BackgroundColor $sl.Colors.PromptBackgroundColor
     Write-Prompt -Object ' ' -ForegroundColor $sl.Colors.PromptForegroundColor -BackgroundColor $sl.Colors.PromptBackgroundColor
@@ -55,6 +44,25 @@ function Write-Theme
 
     Write-Prompt -Object $sl.PromptSymbols.SegmentForwardSymbol -ForegroundColor $lastColor
 }
+
+function Get-AwsPromptInfo {
+  if (Is-AwsDefaultProfile) {
+    $bgColor = 'DarkCyan'
+    $fgColor = "Gray"
+    if (!($SHOW_AWS_PROFILE) -and (Is-AwsDefaultProfile)) {
+      return
+    }
+  } else {
+    $bgColor = "DarkRed"
+    $fgColor = "White"
+  }
+
+  return New-Object PSObject -Property @{
+      BackgroundColor = $bgColor
+      ForegroundColor = $fgColor
+  }
+}
+
 #
 #function Get-VcsInfo2 {
 #  param
@@ -211,14 +219,17 @@ $spg = $global:GitPromptSettings #Posh-Git settings
 $spg.EnableFileStatus = $true
 
 $sl = $global:ThemeSettings #local settings
+$sl.Colors.GitDefaultColor = [ConsoleColor]::DarkYellow
+#$sl.Colors.GitForegroundColor = [ConsoleColor]::White
+
 $sl.Colors.SessionInfoBackgroundColor = [ConsoleColor]::Blue
 $sl.Colors.SessionInfoForegroundColor = [ConsoleColor]::White
 $sl.Colors.PromptForegroundColor = [ConsoleColor]::White
 $sl.Colors.PromptBackgroundColor = [ConsoleColor]::Blue
 $sl.GitSymbols.BranchIdenticalStatusToSymbol = $null
-$sl.GitSymbols.BranchUntrackedSymbol = $VCS_UNTRACKED_ICON
-$sl.GitSymbols.BranchBehindStatusSymbol = $VCS_OUTGOING_CHANGES_ICON
-$sl.GitSymbols.BranchAheadStatusSymbol = $VCS_INCOMING_CHANGES_ICON
+$sl.GitSymbols.BranchUntrackedSymbol = $null #$VCS_UNTRACKED_ICON
+#$sl.GitSymbols.BranchBehindStatusSymbol = $VCS_OUTGOING_CHANGES_ICON
+#$sl.GitSymbols.BranchAheadStatusSymbol = $VCS_INCOMING_CHANGES_ICON
 #$sl.GitSymbols.Branc
 #$sl.GitSymbols.
 #$sl.GitSymbols.
